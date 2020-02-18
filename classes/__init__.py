@@ -195,7 +195,7 @@ def vs(display):
             gstart = False
         
         #winning
-        if p1score == 2:
+        if p1score == 10:
             win = 1
             gamewon = True
         elif p2score == 10:
