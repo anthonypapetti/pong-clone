@@ -19,8 +19,9 @@ class Playeractive():
 class Ball():
     def __init__(self, posx, posy):
         #surface
-        self.image = pygame.Surface((25,25))
-        self.image.fill((0,0,255))
+        self.image = pygame.image.load("assets/images/pongball.png")
+        # self.image = pygame.Surface((25,25))
+        # self.image.fill((0,0,255))
         #keeps track of position
         self.rect = self.image.get_rect()
         self.rect.x = posx
@@ -61,9 +62,6 @@ class Ball():
     def collide(self, player):
         return self.rect.colliderect(player.rect)
 
-
-
-
 #button class
 class Button():
     def __init__(self, text, font, posx, posy):
@@ -72,21 +70,153 @@ class Button():
         self.rect.x = posx
         self.rect.y = posy
     
-
+    #draws buttons onto the screen
     def Draw(self, surface):
         surface.blit(self.image, self.rect)
-    
+
+    #checks for clicks    
     def Click(self, mouse):
         if mouse[0] > self.rect.topleft[0] and mouse[0] < self.rect.topright[0]:
             if mouse[1] > self.rect.topleft[1] and mouse[1] < self.rect.bottomleft[1]:
                 return True
 
+def single(display):
+    #framerate
+    clock = pygame.time.Clock()
+    FPS = 60
+
+    #frame buffer for collision detection
+    buffer = 10
+
+    #initialize scoreboard/countdown fonts
+    scorefont = pygame.font.SysFont("arial", 30)
+    count = (3,2,1)
+    countfont = pygame.font.SysFont("arial", 100)
+    
+    #initialize players
+    Player1 = Playeractive(50, 200)
+    Player2 = Playeractive(950, 200)
+
+    #scores/goals
+    p1score = 0
+    p2goal = False
+
+    #hearts
+    heart = pygame.image.load("assets/images/heart.png")
+
+    #initialize ball
+    Pball = Ball(500, 300)
+
+    gstart = True
+    gamewon = False
+    lives = 5
+
+    while True:
+        #event queue
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                quit()
+    
+        #movement
+        pressed = pygame.key.get_pressed()
+        if pressed[pygame.K_w]:
+            if Player1.rect.y >= 0:
+                Player1.move(-1)
+        elif pressed[pygame.K_s]:
+            if Player1.rect.y <= 600 - 150:
+                Player1.move(1)
+        
+        #AI movement
+        Player2.rect.y = Pball.rect.center[1] - 75
+
+        #check for vertical bounce
+        if Pball.rect.y <= 0 or Pball.rect.y >= 575:
+            Pball.bounce(1)
+
+        #collision detection/bouncing
+        if Pball.collide(Player1) or Pball.collide(Player2):
+            if buffer <= 0:
+                Pball.bounce(0)
+                buffer = 10
+        if Pball.collide(Player1):
+            p1score += 1
+        
+        #scoring
+        if Pball.rect.x <= 0:
+            p2goal = True
+            gstart = True
+
+        #moves the ball
+        Pball.move()
+
+        #update the score
+        text = "Score: " + str(p1score)
+        scoreboard = scorefont.render(text, True, (0, 0, 0), (237, 237, 237))
+
+        #drawing
+        #clears the screen
+        display.fill((255,255,255))
+
+        #drawing
+        #hearts
+        i = 1
+        while i <= lives:
+            heartx =  75 + 35 * (i - 1)
+            display.blit(heart, (heartx, 10))
+            i += 1
+
+        display.blit(Player1.image, Player1.rect)
+        display.blit(Player2.image, Player2.rect)
+        display.blit(scoreboard, (500, 50))
+        display.blit(Pball.image, Pball.rect)
+
+        #updates
+        pygame.display.update()
+        clock.tick(FPS)
+        buffer -= 1
+
+        ##########################
+        ##########################
+        #countdown for game start/scoring
+        while gstart:
+            #goals
+            
+            if p2goal:
+                lives -= 1
+                p2goal = False
+            
+            #gameover
+            if lives == 0:
+                if gameover(display, p1score, "volley"):
+                    p1score = 0
+                    lives = 5
+                else:
+                    return
+            
+            #countdown
+            for num in count:
+                counter = countfont.render(str(num), True, (0,0,0), (237, 237, 237))
+                display.blit(counter, (500,200))
+                pygame.display.update()
+                clock.tick(FPS)
+                sleep(1)   
+            #reset paddles/ball
+            Player1.rect.y = 200
+            Player2.rect.y = 200
+            Pball.rect.y = 300
+            Pball.rect.x = 500
+            Pball.xmove = -.5
+            Pball.ymove = 0 
+            gstart = False
 
 def vs(display):
 
     #framerate
     clock = pygame.time.Clock()
     FPS = 60
+
+    #frame buffer for collision detection
+    buffer = 10
 
     #initialize scoreboard/countdown fonts
     scorefont = pygame.font.SysFont("arial", 30)
@@ -98,25 +228,22 @@ def vs(display):
     Player1 = Playeractive(50, 200)
     Player2 = Playeractive(950, 200)
 
+    #scores/goals
     p1score = 0
     p2score = 0
-
     p1goal = False
     p2goal = False
 
     #initialize ball
     Pball = Ball(500, 300)
 
-
-    game = True
     gstart = True
     gamewon = False
-    while game == True:
+    while True:
         #event queue
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                game = False
-                return False
+                quit()
     
         #movement
         pressed = pygame.key.get_pressed()
@@ -139,7 +266,9 @@ def vs(display):
 
         #collision detection/bouncing
         if Pball.collide(Player1) or Pball.collide(Player2):
-            Pball.bounce(0)
+            if buffer <= 0:
+                Pball.bounce(0)
+                buffer = 10
 
         #moves the ball
         Pball.move()
@@ -169,15 +298,12 @@ def vs(display):
         #updates
         pygame.display.update()
         clock.tick(FPS)
+        buffer -= 1
 
+        ##########################
+        ##########################
         #countdown for game start/scoring
-        if gstart:
-            for num in count:
-                counter = countfont.render(str(num), True, (0,0,0), (237, 237, 237))
-                display.blit(counter, (500,200))
-                pygame.display.update()
-                clock.tick(FPS)
-                sleep(1)   
+        while gstart:
             #goals
             if p1goal:
                 p1score += 1
@@ -185,6 +311,23 @@ def vs(display):
             if p2goal:
                 p2score += 1
                 p2goal = False
+            
+            #winning
+            if p1score == 10:
+                win = 1
+                gamewon = True
+                break
+            elif p2score == 2:
+                win = 2
+                gamewon = True
+                break
+
+            for num in count:
+                counter = countfont.render(str(num), True, (0,0,0), (237, 237, 237))
+                display.blit(counter, (500,200))
+                pygame.display.update()
+                clock.tick(FPS)
+                sleep(1)   
             #reset paddles/ball
             Player1.rect.y = 200
             Player2.rect.y = 200
@@ -203,19 +346,17 @@ def vs(display):
             gamewon = True
         
         if gamewon:
-            if gameover(display, win):
+            if gameover(display, win, "vs"):
                 gstart = True
                 p1score = 0
                 p2score = 0
                 gamewon = False
             else:
-                quit()
-
-
+                return
 
 #restarts the game
 #use gstart, pscore(s), and pgoal(s)
-def gameover(display, winner):
+def gameover(display, winner, mode):
     font = pygame.font.SysFont("arial", 30)
     clock = pygame.time.Clock()
     FPS = 60
@@ -225,7 +366,14 @@ def gameover(display, winner):
     pygame.display.update()
 
     #make buttons/text
-    text = font.render("Player " + str(winner) + " Wins! " + "Would you like to play again?", True, (0,0,0), (237,237,237))
+    if mode == "vs":
+        text = font.render("Player " + str(winner) + " Wins! " + "Would you like to play again?", True, (0,0,0), (237,237,237))
+        textpos = (200, 100)
+    elif mode == "volley":
+        text = font.render("Would you like to play again?", True, (0,0,0), (237,237,237))
+        textpos = (350, 100)
+        score = font.render("Score: " + str(winner), True, (0,0,0), (237,237,237))
+        scorepos = (475, 200)
     yesbutton = Button("Yes", font, 275, 300)
     nobutton = Button("No", font, 700, 300)
 
@@ -245,13 +393,10 @@ def gameover(display, winner):
                     return True
         #drawing
         display.fill((255,255,255))
-        display.blit(text, (200, 100))
+        display.blit(text, textpos)
+        if mode == "volley":
+            display.blit(score, scorepos)
         yesbutton.Draw(display)
         nobutton.Draw(display)
         pygame.display.update()
         clock.tick(FPS)
-
-
-
-
-
