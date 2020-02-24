@@ -1,5 +1,5 @@
 import pygame
-from classes import Button, vs
+from classes import Button, vs, single
 
 #intialize pygame
 pygame.init()
@@ -12,7 +12,7 @@ FPS = 60
 dislen = 1000
 diswid = 600
 gamewindow = pygame.display.set_mode((dislen, diswid))
-pygame.display.set_caption("Test")
+pygame.display.set_caption("Pong+")
 
 #intialize fonts
 titlefont = pygame.font.SysFont("arial", 50)
@@ -20,7 +20,7 @@ buttonfont = pygame.font.SysFont("arial", 30)
 
 #initializes text
 title = Button("Pong+", titlefont, 425, 100)
-singleplayerbutton = Button("Single Player", buttonfont, 225, 300)
+singleplayerbutton = Button("Volley Mode", buttonfont, 225, 300)
 multiplayerbutton = Button("VS Match", buttonfont, 600, 300)
 
 
@@ -36,10 +36,10 @@ while game == True:
             game = False
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if multiplayerbutton.Click(mouse):
-                if not vs(gamewindow):
-                    quit()
+                vs(gamewindow)
+            if singleplayerbutton.Click(mouse):
+                single(gamewindow)
             
-
     #drawing
     #clears the screen
     gamewindow.fill((255,255,255))
