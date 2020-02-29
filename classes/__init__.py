@@ -49,7 +49,6 @@ class Ball():
                 self.ymove = uniform(.5, 2.5)
             elif self.ymove >= 0:
                 self.ymove = uniform(-.5, -2.5)
-        
         #vertical
         if direction == 1:
             self.ymove *= -1
@@ -187,11 +186,24 @@ def single(display):
             
             #gameover
             if lives == 0:
+                #update highscore
+                #read highscore
+                highscore = open("highscore.txt", "r")
+                hs = highscore.readline()
+                hs = int(hs)
+                highscore.close()
+                # overwrite highscore
+                if p1score > hs:
+                    highscore = open("highscore.txt", "w")
+                    highscore.write(str(p1score))
+                    highscore.close()
+                    hs = p1score
+                #gameover screen
                 if gameover(display, p1score, "volley"):
                     p1score = 0
                     lives = 5
                 else:
-                    return
+                    return hs
             
             #countdown
             for num in count:
