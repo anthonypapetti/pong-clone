@@ -1,8 +1,15 @@
 import pygame
+
 from classes import Button, vs, single
 
 #intialize pygame
 pygame.init()
+
+#highscore
+highscore = open("highscore.txt", "r")
+hs = highscore.readline()
+hsint = int(hs)
+highscore.close()
 
 #intialize framerate
 clock = pygame.time.Clock()
@@ -22,6 +29,7 @@ buttonfont = pygame.font.SysFont("arial", 30)
 title = Button("Pong+", titlefont, 425, 100)
 singleplayerbutton = Button("Volley Mode", buttonfont, 225, 300)
 multiplayerbutton = Button("VS Match", buttonfont, 600, 300)
+hstext = buttonfont.render("High Score: " + hs, 1, (0,0,0,))
 
 
 game = True
@@ -38,7 +46,11 @@ while game == True:
             if multiplayerbutton.Click(mouse):
                 vs(gamewindow)
             if singleplayerbutton.Click(mouse):
-                single(gamewindow)
+                playerscore = single(gamewindow)
+                if playerscore > hsint:
+                    hs = str(playerscore)
+                    hsint = playerscore
+                    hstext = buttonfont.render("High Score: " + hs, 1, (0,0,0,))
             
     #drawing
     #clears the screen
@@ -48,6 +60,7 @@ while game == True:
     title.Draw(gamewindow)
     singleplayerbutton.Draw(gamewindow)
     multiplayerbutton.Draw(gamewindow)
+    gamewindow.blit(hstext, (225, 350))
     
     #updates
     pygame.display.update()
