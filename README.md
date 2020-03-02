@@ -1,5 +1,9 @@
 # pong+
-Just a small clone of pong to get myself used to pygame
+Just a small game to try and challenge myself
+
+# requirements
+Python 3.7.4
+Pygame 1.9.6
 
 # Directions:
 Player 1:
